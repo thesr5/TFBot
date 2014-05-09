@@ -18,4 +18,9 @@ Titanfall.Pug Bot commands:
 * !last - Will display the last PUG's teams
 * !pick - This command is only used by the captains after a pug match has been initiated. syntax: !pick <NUMBER>
 
+Titanfall.Pug Bot Config Changes:
+
+$bnick - Change to the username of the bot
+$jchan - Channel the bot will join
+
 
