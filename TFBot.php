@@ -14,8 +14,8 @@
 set_time_limit(0);
 //Open socket to server,port
 //My Config
-$bnick = "TFBot";
-$jchan = "#titanfall.pug";
+$bnick = "BOTNAME";
+$jchan = "#Channeltojoin";
 $socket = fsockopen("irc.quakenet.org",6667);
 $cmdsym = "!";
 $pugmax = 12;
@@ -134,7 +134,7 @@ while (1) {
 		}
 		if (stripos( $data, 'Welcome' ) !== false) {
 		
-		fputs($socket,"PRIVMSG Q@CServe.quakenet.org : AUTH TFBot FBzgquYSij\n");
+		fputs($socket,"PRIVMSG Q@CServe.quakenet.org : AUTH ******** *********\n");
 		sleep(1);
 		fputs($socket,"MODE $bnick +x\n");
 		//Enter the channel you want to use your bot on.
