@@ -14,11 +14,13 @@
 set_time_limit(0);
 //Open socket to server,port
 //My Config
-$bnick = "BOTNAME";
-$jchan = "#Channeltojoin";
-$socket = fsockopen("irc.quakenet.org",6667);
-$cmdsym = "!";
-$pugmax = 12;
+$bnick = "NICKNAME";
+$authname = "USERNAME";
+$authpath = "PASSWORD";
+$jchan = "#CHANNEL"; //channel to join
+$socket = fsockopen("irc.quakenet.org",6667); //network to connect to
+$cmdsym = "!"; //command prefix (ex:!commands)
+$pugmax = 12; //default player count needed to start pug can be changed as a admin
 /*Set Bot color Scheme
 ====[Color Codes]=====================================================================
 ||		00 - White			05 - Dark Red		10 - Teal		15 - Light Grey		||
@@ -134,7 +136,7 @@ while (1) {
 		}
 		if (stripos( $data, 'Welcome' ) !== false) {
 		
-		fputs($socket,"PRIVMSG Q@CServe.quakenet.org : AUTH ******** *********\n");
+		fputs($socket,"PRIVMSG Q@CServe.quakenet.org : AUTH $authname $authpass\n");
 		sleep(1);
 		fputs($socket,"MODE $bnick +x\n");
 		//Enter the channel you want to use your bot on.
@@ -881,19 +883,20 @@ while (1) {
 				if (admincheck($nhost)) {
 						$aduser = rtrim($get[4]);
 					if (!empty($aduser)) {
+							$admin = file("admins.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 							if (array_search($aduser, $admin) !== FALSE) {
 							fputs($socket,"CNOTICE $nick $jchan : ${scolor}${bcolor} $aduser is already on the admin list${afcolor}${bcolor}!\n");
 							}
 							else {
 							$aduser = $aduser . "\n";
 							file_put_contents("admins.txt", $aduser, FILE_APPEND);
-							fputs($socket,"CNOTICE $nick $jchan : ${scolor}${bcolor}You've added the list${afcolor}${bcolor}:${scolor}${bcolor} $aduser\n");
+							fputs($socket,"CNOTICE $nick $jchan : ${scolor}${bcolor}Added new admin${afcolor}${bcolor}:${scolor}${bcolor} $aduser\n");
 							} 
 						} else 
-						{ //fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Incorect syntac${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}addadmin ${afcolor}${bcolor}<${scolor}${bcolor}HOSTNAME${afcolor}${bcolor}> (${scolor}${bcolor}ex${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}addadmin $nhost${afcolor}${bcolor})\n"); 
+						{ fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Incorect syntac${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}addadmin ${afcolor}${bcolor}<${scolor}${bcolor}HOSTNAME${afcolor}${bcolor}> (${scolor}${bcolor}ex${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}addadmin $nhost${afcolor}${bcolor})\n"); 
 						}
 						} else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
-                        unset($aduser);
+                      unset($aduser);
                       break;
 			case "${cmdsym}commands":
 				if (admincheck($nhost)) {
@@ -1049,7 +1052,8 @@ function puglock($pugmax, $file="tready.txt")
 }
 function admincheck($nhost) {
 $admin = file("admins.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-if (array_search(strtolower($nhost), array_map('strtolower', $admin)) !== FALSE) {
+$nhost = str_replace("~", "", $nhost);
+if (array_search(strtolower($nhost), str_replace("~", "", array_map('strtolower', $admin))) !== FALSE) {
 return true;
 	}
 }
