@@ -20,7 +20,7 @@ Titanfall.Pug Bot commands:
 
 Titanfall.Pug Bot Config Changes:
 
-$bnick - Change to the username of the bot
-$jchan - Channel the bot will join
+* $bnick - Change to the username of the bot
+* $jchan - Channel the bot will join
 
 
