@@ -16,7 +16,7 @@ set_time_limit(0);
 //My Config
 $bnick = "NICKNAME";
 $authname = "USERNAME";
-$authpath = "PASSWORD";
+$authpass = "PASSWORD";
 $jchan = "#CHANNEL"; //channel to join
 $socket = fsockopen("irc.quakenet.org",6667); //network to connect to
 $cmdsym = "!"; //command prefix (ex:!commands)
