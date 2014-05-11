@@ -15,8 +15,8 @@ set_time_limit(0);
 //Open socket to server,port
 //My Config
 $bnick = "NICKNAME";
-$authname = "USERNAME";
-$authpass = "PASSWORD";
+$authname = "AUTHNAME";
+$authpass = "AUTHPASS";
 $jchan = "#CHANNEL"; //channel to join
 $socket = fsockopen("irc.quakenet.org",6667); //network to connect to
 $cmdsym = "!"; //command prefix (ex:!commands)
@@ -32,10 +32,15 @@ $pugmax = 12; //default player count needed to start pug can be changed as a adm
 */
 
 $afcolor = "04";	// Main accent color default: 04
-$bcolor = "";		// Background color default: 01
+$bcolor = "99";		// Background color default: 01
 $scolor = "";		// Standard text color default: 00
 $team1 = "04";		// Team 1 accent color default: 04
 $team2 = "12";		// Team 2 accent color default: 12
+
+$scolor = "$scolor";
+$afcolor = "$afcolor,$bcolor";
+$team1 = "$team1,$bcolor";
+$team2 = "$team2,$bcolor";
 
 //End Bot color scheme
 
@@ -174,7 +179,7 @@ while (1) {
 					$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						if (array_search($partuser, $line) !== FALSE) {
 							fputs($socket,"NOTICE $partuser : You were removed from the PUG List. - $chan.\n");
-							fputs($socket,"PRIVMSG $chan : 04,01$partuser 00,01was removed from the pug list04,01. - 00,01Reason04,01: PART.\n");
+							fputs($socket,"PRIVMSG $chan : ${afcolor}$partuser ${scolor}was removed from the pug list${afcolor}. - ${scolor}Reason${afcolor}: PART.\n");
 							$DELETE = $partuser; 
 								$datap = file("tready.txt"); 
 								$out = array(); 
@@ -196,10 +201,10 @@ while (1) {
 			}
 			if (stripos( $get[1], 'JOIN' ) !== false) {
 				foreach($commands as $key=>$value){
-				$command[$key]=str_replace($cmdsym,"${afcolor}${bcolor}${cmdsym}${scolor}${bcolor}",$value);
+				$command[$key]=str_replace($cmdsym,"${afcolor}${cmdsym}${scolor}",$value);
 				}
-				$cmdlist = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $command); 
-				fputs($socket,"CNOTICE $nick $jchan : ${afcolor}${bcolor}#${scolor}${bcolor}Titanfall.Pug Commands${afcolor}${bcolor}:${scolor}${bcolor} $cmdlist \n");
+				$cmdlist = implode("${afcolor},${scolor} ", $command); 
+				fputs($socket,"CNOTICE $nick $jchan : ${afcolor}#${scolor}Titanfall.Pug Commands${afcolor}:${scolor} $cmdlist \n");
 			}
                 //This is where we start processing the commands we entered in earlier
                 if (in_array($text,$commands)) {
@@ -209,14 +214,14 @@ while (1) {
 
 				//PUG BOT CODE---------------------------------------------------------
 					case "${cmdsym}commands":
-						fputs($socket,"CNOTICE $nick $chan : ${afcolor}${bcolor}#${scolor}${bcolor}Titanfall.Pug Commands${afcolor}${bcolor}:${scolor}${bcolor} $cmdlist \n");
+						fputs($socket,"CNOTICE $nick $chan : ${afcolor}#${scolor}Titanfall.Pug Commands${afcolor}:${scolor} $cmdlist \n");
 						break;
 					case "${cmdsym}join":
 					case "${cmdsym}add":
 						$tuser = $nick;
 						$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						if (array_search($tuser, $line) !== FALSE) {
-						fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Your already on the list${afcolor}${bcolor}!\n");
+						fputs($socket,"CNOTICE $nick $chan : ${scolor}Your already on the list${afcolor}!\n");
 						}
 						else {
 						$tuser = $nick . "\n";
@@ -225,16 +230,16 @@ while (1) {
 						file_put_contents("tready.txt", $tuser, FILE_APPEND);
 						$listnp = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						$nplayers = $pugmax - count($listnp);								
-						fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}You've been added to the list${afcolor}${bcolor}:${scolor}${bcolor} $tuser\n");
+						fputs($socket,"CNOTICE $nick $chan : ${scolor}You've been added to the list${afcolor}:${scolor} $tuser\n");
 						if ($nplayers !== 0) {
-							fputs($socket,"PRIVMSG $chan : ${afcolor}${bcolor}(${scolor}${bcolor}$nplayers needed to begin${afcolor}${bcolor})\n");
+							fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");
 						}
 						unset($line);
 						sleep(1);
 						//START PUG SCRIPT
 						$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 								if (count($line) == "$pugmax") { 
-									fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}PUG LIST FULL${afcolor}${bcolor}:${scolor}${bcolor} Choosing Random Captains!\n");
+									fputs($socket,"PRIVMSG $chan : ${scolor}PUG LIST FULL${afcolor}:${scolor} Choosing Random Captains!\n");
 									   // choose random captians
 									   $players = $line;
 									   $random_capt = array_rand($players,2);
@@ -244,8 +249,8 @@ while (1) {
 									file_put_contents("captains.txt", $captains);
 									file_put_contents("militia.txt", $militia_capt . "\n");
 									file_put_contents("imc.txt", $imc_capt . "\n");
-									fputs($socket,"PRIVMSG $chan : ${team2}${bcolor}IMC Captain:${scolor}${bcolor} $imc_capt\n");
-									fputs($socket,"PRIVMSG $chan : ${team1}${bcolor}Militia Captain${team1}${bcolor}:${scolor}${bcolor} $militia_capt\n");
+									fputs($socket,"PRIVMSG $chan : ${team2}IMC Captain:${scolor} $imc_capt\n");
+									fputs($socket,"PRIVMSG $chan : ${team1}Militia Captain${team1}:${scolor} $militia_capt\n");
 											//remove Captains from pug list and Create Pug List
 												$DELETE1 = $militia_capt;
 												$DELETE2 = $imc_capt;
@@ -283,7 +288,7 @@ while (1) {
 												} 
 												flock($fp, LOCK_UN); 
 												fclose($fp);
-								fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Captains removed from Pug choices${afcolor}${bcolor}, ${scolor}${bcolor}Captains coin toss now${afcolor}${bcolor}......\n");	
+								fputs($socket,"PRIVMSG $chan : ${scolor}Captains removed from Pug choices${afcolor}, ${scolor}Captains coin toss now${afcolor}......\n");	
 									sleep(1);
 									unset($line);
 									$line = file("captains.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -293,20 +298,20 @@ while (1) {
 										$militia_team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 									file_put_contents("pick.txt", $winner);
 								if (array_search($winner, $militia_team) !== FALSE) {
-									$team = "${team1}${bcolor}Militia";
+									$team = "${team1}Militia";
 									} else { 
-									$team = "${team2}${bcolor}IMC";
+									$team = "${team2}IMC";
 									}
 									sleep(5);
-									fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}First to choose${afcolor}${bcolor}: ${scolor}${bcolor}$winner - $team\n");
+									fputs($socket,"PRIVMSG $chan : ${scolor}First to choose${afcolor}: ${scolor}$winner - $team\n");
 									$listlft = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											foreach($listlft as $index => $entry)
 												{
 													$index = $index+1;
-													$listnlft .= "${afcolor}${bcolor}[${scolor}" . $index . "${afcolor}${bcolor}]${scolor} " . $entry . "${afcolor}${bcolor},${scolor} ";
+													$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . "${afcolor},${scolor} ";
 												}
 											$listnlft = substr($listnlft, 0 , -1);
-											fputs($socket,"CNOTICE $winner $jchan : ${scolor}${bcolor}Picks${afcolor}${bcolor}:${scolor}${bcolor} $listnlft\n");
+											fputs($socket,"CNOTICE $winner $jchan : ${scolor}Picks${afcolor}:${scolor} $listnlft\n");
 								}
 								//END PUG SCRIPT
 						}
@@ -315,10 +320,10 @@ while (1) {
 						$slist = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						$line = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						$slistc = $slist;
-						$slist = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $slist);
+						$slist = implode("${afcolor},${scolor} ", $slist);
 						if (array_search($tuser, $line) !== FALSE) {
-							fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Your already on the side list${afcolor}${bcolor}!\n");
-							fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Side List${afcolor}${bcolor}: $slist\n"); 
+							fputs($socket,"CNOTICE $nick $chan : ${scolor}Your already on the side list${afcolor}!\n");
+							fputs($socket,"CNOTICE $nick $chan : ${scolor}Side List${afcolor}: $slist\n"); 
 						}
 						else {
 							$line = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -330,17 +335,17 @@ while (1) {
 									unset($slist);
 											$slist = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											$slistc = $slist;
-											$slist = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $slist);
-												fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}There is currently a PUG in progress your name has been added to the side list${afcolor}${bcolor}.\n"); 
-												fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Side List${afcolor}${bcolor}:${scolor}${bcolor} $slist\n");
+											$slist = implode("${afcolor},${scolor} ", $slist);
+												fputs($socket,"CNOTICE $nick $chan : ${scolor}There is currently a PUG in progress your name has been added to the side list${afcolor}.\n"); 
+												fputs($socket,"CNOTICE $nick $chan : ${scolor}Side List${afcolor}:${scolor} $slist\n");
 								} 
 								else {
 								unset($slist);
 								$slist = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 								$slistc = $slist;
-								$slist = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $slist);
-									fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}There is currently a PUG in progress and the side list is full... Please wait${afcolor}${bcolor}.\n"); 
-									fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Side List${afcolor}${bcolor}:${scolor}${bcolor} $slist\n"); }
+								$slist = implode("${afcolor},${scolor} ", $slist);
+									fputs($socket,"CNOTICE $nick $chan : ${scolor}There is currently a PUG in progress and the side list is full... Please wait${afcolor}.\n"); 
+									fputs($socket,"CNOTICE $nick $chan : ${scolor}Side List${afcolor}:${scolor} $slist\n"); }
 						  }
 						} 
 					}
@@ -349,30 +354,30 @@ while (1) {
 					case "${cmdsym}coms":
 					case "${cmdsym}voip":
 						$list = file("coms.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$list = implode("${afcolor}${bcolor}||${scolor}${bcolor} ", $list); 
-						fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}VOIP${afcolor}${bcolor}:${scolor}${bcolor} $list\n"); 
+						$list = implode("${afcolor}||${scolor} ", $list); 
+						fputs($socket,"PRIVMSG $chan : ${scolor}VOIP${afcolor}:${scolor} $list\n"); 
 						unset($list);
 						break;
 					case "${cmdsym}last":
 						$militia_last = file("militia-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$militia_last = implode("${scolor}${bcolor},${team1}${bcolor} ", $militia_last); 
+						$militia_last = implode("${scolor},${team1} ", $militia_last); 
 						$imc_last = file("imc-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$imc_last = implode("${scolor}${bcolor},${team2}${bcolor} ", $imc_last); 
-						fputs($socket,"PRIVMSG $chan : ${team1}${bcolor}Militia Team -- ${scolor}${bcolor}[${team1}${bcolor}C${scolor}${bcolor}]${team1}${bcolor} $militia_last\n");
-						fputs($socket,"PRIVMSG $chan : ${team2}${bcolor}IMC Team -- ${scolor}${bcolor}[${team2}${bcolor}C${scolor}${bcolor}]${team2}${bcolor} $imc_last\n");
+						$imc_last = implode("${scolor}, ${team2}", $imc_last); 
+						fputs($socket,"PRIVMSG $chan : ${team1}Militia Team -- ${scolor}[${team1}C${scolor}]${team1} $militia_last\n");
+						fputs($socket,"PRIVMSG $chan : ${team2}IMC Team -- ${scolor}[${team2}C${scolor}]${team2} $imc_last\n");
 						unset($militia_last, $imc_last);
 						break;
 					case "${cmdsym}list":
 					$pinp = puglock($pugmax);
 					if ($pinp !== TRUE) {
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$listn = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $list); 
+						$listn = implode("${afcolor}, ${scolor}", $list); 
 						if (empty($list)) { 
-						fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Currently no players are waiting${afcolor}${bcolor}! -- ${scolor}${bcolor}To add yourself to the list use the following commands${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}add \n");
+						fputs($socket,"PRIVMSG $chan : ${scolor}Currently no players are waiting${afcolor}! -- ${scolor}To add yourself to the list use the following commands${afcolor}: $cmdsym${scolor}add \n");
 						}
 						else {
 							$nplayers = $pugmax - count($list);
-						fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Currently waiting ${afcolor}${bcolor}(${scolor}${bcolor}$nplayers needed to begin${afcolor}${bcolor}):${scolor}${bcolor} $listn\n");
+						fputs($socket,"PRIVMSG $chan : ${scolor}Currently waiting ${afcolor}(${scolor}$nplayers needed to begin${afcolor}):${scolor} $listn\n");
 						}
 						} else {
 						$tuser = $nick;
@@ -384,16 +389,16 @@ while (1) {
 						foreach($list as $index => $entry)
 							{
 								$index = $index+1;
-								$listn .= "${afcolor}${bcolor}[${scolor}" . $index . "${afcolor}${bcolor}]${scolor} " . $entry . " ";
+								$listn .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . " ";
 							}
 
 							$listn = substr($listn, 0 , -1);
 
-						fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}PUG - picks left${afcolor}${bcolor}:${scolor}${bcolor} $listn\n"); 
+						fputs($socket,"CNOTICE $nick $chan : ${scolor}PUG - picks left${afcolor}:${scolor} $listn\n"); 
 						} else {
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$listn = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $list); 
-						fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Players in current PUG${afcolor}${bcolor}:${scolor}${bcolor} $listn\n");
+						$listn = implode("${afcolor},${scolor} ", $list); 
+						fputs($socket,"PRIVMSG $chan : ${scolor}Players in current PUG${afcolor}:${scolor} $listn\n");
 							}
 						}
 						unset($list, $listn);
@@ -417,17 +422,17 @@ while (1) {
 							//Check picker team
 							$team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 							if (array_search($picker, $team) !== FALSE) {
-								$team = "${afcolor}${bcolor}Militia";
+								$team = "${afcolor}Militia";
 								$teamfile = "militia.txt"; 
-								$ttheme = "${team1}${bcolor},${scolor}${bcolor} ";
-								$tcolor = "${team1}${bcolor}";
+								$ttheme = "${team1},${scolor} ";
+								$tcolor = "${team1}";
 								}
 								else
 								{
-								$team = "${team2}${bcolor}IMC";
+								$team = "${team2}IMC";
 								$teamfile = "imc.txt";
-								$ttheme = "${team2}${bcolor},${scolor}${bcolor} ";
-								$tcolor = "${team2}${bcolor}";
+								$ttheme = "${team2},${scolor} ";
+								$tcolor = "${team2}";
 								}
 							if (!empty($puser) && is_numeric($pusergt)) {
 								if (array_search($puser, $pline) !== FALSE) {
@@ -453,8 +458,8 @@ while (1) {
 												
 									$tlist = file($teamfile, FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 									$tlistn = implode($ttheme, $tlist); 
-										fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}$puser has been added to $team ${scolor}${bcolor}team.\n");
-										fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Currently on $team:${scolor}${bcolor} [${tcolor}C${scolor}${bcolor}] $tlistn\n");
+										fputs($socket,"CNOTICE $nick $chan : ${scolor}$puser has been added to $team ${scolor}team.\n");
+										fputs($socket,"PRIVMSG $chan : ${scolor}Currently on $team:${scolor} [${tcolor}C${scolor}] $tlistn\n");
 										unset($teamfile, $ttheme);
 								//Next Picker
 									$pick = file("pick.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -481,23 +486,23 @@ while (1) {
 										//Check team of new picker
 										$team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 										if (array_search($npicker, $team) !== FALSE) {
-												$team = "${team1}${bcolor}Militia";
-												$teamc = "${team1}${bcolor}";
+												$team = "${team1}Militia";
+												$teamc = "${team1}";
 												}
 												else
 												{
-												$team = "${team2}${bcolor}IMC";
-												$teamc = "${team2}${bcolor}";
+												$team = "${team2}IMC";
+												$teamc = "${team2}";
 												}
 										$pready = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 										if (count($pready) !== 1) {
 										sleep(1);
-										fputs($socket,"PRIVMSG $chan : ${teamc}$npicker ${scolor}${bcolor}is now choosing for${teamc}: $team\n");
+										fputs($socket,"PRIVMSG $chan : ${teamc}$npicker ${scolor}is now choosing for${teamc}: $team\n");
 											$listlft = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											foreach($listlft as $index => $entry)
 												{
 													$index = $index+1;
-													$listnlft .= "${afcolor}${bcolor}[${scolor}" . $index . "${afcolor}${bcolor}]${scolor} " . $entry . " ";
+													$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . " ";
 												}
 											$listnlft = substr($listnlft, 0 , -1);
 											fputs($socket,"CNOTICE $npicker $chan : $listnlft\n");
@@ -508,21 +513,21 @@ while (1) {
 										$ltbp = implode(" ", $lplist); 
 									    $team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											if (array_search($npicker, $team) !== FALSE) {
-												$team = "${team1}${bcolor}Militia";
+												$team = "${team1}Militia";
 												$teamfile = "militia.txt"; 
-												$ttheme = "${team1}${bcolor},${scolor}${bcolor} ";
+												$ttheme = "${team1},${scolor} ";
 												}
 												else
 												{
-												$team = "${team2}${bcolor}IMC";
+												$team = "${team2}IMC";
 												$teamfile = "imc.txt";
-												$ttheme = "${team2}${bcolor},${scolor}${bcolor} ";
+												$ttheme = "${team2},${scolor} ";
 												}
 										//put last pick on right team
 										$altbp = $ltbp . "\n";
 										file_put_contents($teamfile, $altbp, FILE_APPEND);
 										
-											fputs($socket,"CNOTICE $npicker $chan : ${scolor}${bcolor}$ltbp has been AUTO added to $team${scolor}${bcolor} as last pick.\n");
+											fputs($socket,"CNOTICE $npicker $chan : ${scolor}$ltbp has been AUTO added to $team${scolor} as last pick.\n");
 											
 										//POST TEAMS
 										sleep(1);
@@ -531,11 +536,11 @@ while (1) {
 										copy("imc.txt", "imc-last.txt");
 										
 										$militia_last = file("militia-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-										$militia_last = implode("${scolor}${bcolor},${team1}${bcolor} ", $militia_last); 
+										$militia_last = implode("${scolor},${team1} ", $militia_last); 
 										$imc_last = file("imc-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-										$imc_last = implode("${scolor}${bcolor},${team2}${bcolor} ", $imc_last); 
-										fputs($socket,"PRIVMSG $chan : ${team1}${bcolor}Militia Team -- ${scolor}${bcolor}[${team1}${bcolor}C${scolor}${bcolor}]${team1}${bcolor} $militia_last\n");
-										fputs($socket,"PRIVMSG $chan : ${team2}${bcolor}IMC Team -- ${scolor}${bcolor}[${team2}${bcolor}C${scolor}${bcolor}]${team2}${bcolor} $imc_last\n");
+										$imc_last = implode("${scolor},${team2} ", $imc_last); 
+										fputs($socket,"PRIVMSG $chan : ${team1}Militia Team -- ${scolor}[${team1}C${scolor}]${team1} $militia_last\n");
+										fputs($socket,"PRIVMSG $chan : ${team2}IMC Team -- ${scolor}[${team2}C${scolor}]${team2} $imc_last\n");
 										sleep(5);
 										unset($pinp, $altbp, $team, $teamfile, $ttheme, $tcolor, $militia_last, $imc_last, $pusergt, $listnlft, $listlft, $index);
 										//clear files for next match
@@ -554,13 +559,13 @@ while (1) {
 										$pinp = puglock($pugmax,"tready.txt");
 										if ($pinp == TRUE) {
 												
-												fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Players from waiting list was full${afcolor}${bcolor}:${scolor}${bcolor} PUG START IN 10sec.\n");
+												fputs($socket,"PRIVMSG $chan : ${scolor}Players from waiting list was full${afcolor}:${scolor} PUG START IN 10sec.\n");
 													sleep(8);
 													
 													//START PUG SCRIPT
 													$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 															if (count($line) == "$pugmax") { 
-																fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}PUG LIST FULL${afcolor}${bcolor}:${scolor}${bcolor} Choosing Random Captains!\n");
+																fputs($socket,"PRIVMSG $chan : ${scolor}PUG LIST FULL${afcolor}:${scolor} Choosing Random Captains!\n");
 																   // choose random captians
 																   $players = $line;
 																   $random_capt = array_rand($players,2);
@@ -570,8 +575,8 @@ while (1) {
 																file_put_contents("captains.txt", $captains);
 																file_put_contents("militia.txt", $militia_capt . "\n");
 																file_put_contents("imc.txt", $imc_capt . "\n");
-																fputs($socket,"PRIVMSG $chan : ${team2}${bcolor}IMC Captain:${scolor}${bcolor} $imc_capt\n");
-																fputs($socket,"PRIVMSG $chan : ${team1}${bcolor}Militia Captain${team1}${bcolor}:${scolor}${bcolor} $militia_capt\n");
+																fputs($socket,"PRIVMSG $chan : ${team2}IMC Captain:${scolor} $imc_capt\n");
+																fputs($socket,"PRIVMSG $chan : ${team1}Militia Captain${team1}:${scolor} $militia_capt\n");
 																		//remove Captains from pug list and Create Pug List
 																			$DELETE1 = $militia_capt;
 																			$DELETE2 = $imc_capt;
@@ -609,7 +614,7 @@ while (1) {
 																			} 
 																			flock($fp, LOCK_UN); 
 																			fclose($fp);
-															fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Captains removed from Pug choices${afcolor}${bcolor}, ${scolor}${bcolor}Captains coin toss now${afcolor}${bcolor}......\n");	
+															fputs($socket,"PRIVMSG $chan : ${scolor}Captains removed from Pug choices${afcolor}, ${scolor}Captains coin toss now${afcolor}......\n");	
 																sleep(1);
 																unset($line);
 																$line = file("captains.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -619,26 +624,26 @@ while (1) {
 																	$militia_team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 																file_put_contents("pick.txt", $winner);
 															if (array_search($winner, $militia_team) !== FALSE) {
-																$team = "${team1}${bcolor}Militia";
+																$team = "${team1}Militia";
 																} else { 
-																$team = "${team2}${bcolor}IMC";
+																$team = "${team2}IMC";
 																}
 																sleep(5);
-																fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}First to choose${afcolor}${bcolor}: ${scolor}${bcolor}$winner - $team\n");
+																fputs($socket,"PRIVMSG $chan : ${scolor}First to choose${afcolor}: ${scolor}$winner - $team\n");
 																$listlft = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 																		foreach($listlft as $index => $entry)
 																			{
 																				$index = $index+1;
-																				$listnlft .= "${afcolor}${bcolor}[${scolor}" . $index . "${afcolor}${bcolor}]${scolor} " . $entry . " ";
+																				$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . " ";
 																			}
 																		$listnlft = substr($listnlft, 0 , -1);
-																		fputs($socket,"CNOTICE $winner $jchan : ${scolor}${bcolor}Picks${afcolor}${bcolor}:${scolor}${bcolor} $listnlft\n");
+																		fputs($socket,"CNOTICE $winner $jchan : ${scolor}Picks${afcolor}:${scolor} $listnlft\n");
 															}
 															//END PUG SCRIPT
 													}
 													else {		
-																fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}PUG BOT RESET FOR NEW MATCH${afcolor}${bcolor}!\n");
-																fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Use ${afcolor}${bcolor}$cmdsym${scolor}${bcolor}add to add yourself to the waiting list${afcolor}${bcolor}.\n");
+																fputs($socket,"PRIVMSG $chan : ${scolor}PUG BOT RESET FOR NEW MATCH${afcolor}!\n");
+																fputs($socket,"PRIVMSG $chan : ${scolor}Use ${afcolor}$cmdsym${scolor}add to add yourself to the waiting list${afcolor}.\n");
 															} 
 									}
 										
@@ -646,21 +651,21 @@ while (1) {
 										}
 								}
 								else {
-								fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}The Number you have chosen is no longer available${afcolor}${bcolor}:${scolor}${bcolor} $pusergt ${afcolor}${bcolor}|| ${scolor}${bcolor} ${cmdsym}pick <NUMBER from ${cmdsym}list>\n");
+								fputs($socket,"CNOTICE $nick $chan : ${scolor}The Number you have chosen is no longer available${afcolor}:${scolor} $pusergt ${afcolor}|| ${scolor} ${cmdsym}pick <NUMBER from ${cmdsym}list>\n");
 								} 
 							
 							}
 							else {
-								fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}To use this command follow this syntax${afcolor}${bcolor}:${scolor}${bcolor} ${cmdsym}pick <NUMBER from ${cmdsym}list> (ex: ${cmdsym}pick 1)\n");
+								fputs($socket,"CNOTICE $nick $chan : ${scolor}To use this command follow this syntax${afcolor}:${scolor} ${cmdsym}pick <NUMBER from ${cmdsym}list> (ex: ${cmdsym}pick 1)\n");
 								}
 							} 
 							else 
-							{ fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Your not the current Captain picking${afcolor}${bcolor}:${scolor}${bcolor} $apicker\n"); 
+							{ fputs($socket,"CNOTICE $nick $chan : ${scolor}Your not the current Captain picking${afcolor}:${scolor} $apicker\n"); 
 								}
 					
 					} 
 					else { 
-						fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Still waiting for players to start!${afcolor}${bcolor}.\n"); 
+						fputs($socket,"CNOTICE $nick $chan : ${scolor}Still waiting for players to start!${afcolor}.\n"); 
 						}
                         unset($puser, $picker, $team);
                         break;
@@ -688,10 +693,10 @@ while (1) {
 								fclose($fp);
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						$nplayers = $pugmax - count($list);								
-						fputs($socket,"PRIVMSG $chan : ${afcolor}${bcolor}(${scolor}${bcolor}$nplayers needed to begin${afcolor}${bcolor})\n");								
+						fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");								
 							}
 						else {
-							fputs($socket,"CNOTICE $nick $chan : ${scolor}${bcolor}Your not on the list${afcolor}${bcolor}:${scolor}${bcolor} $auser\n");
+							fputs($socket,"CNOTICE $nick $chan : ${scolor}Your not on the list${afcolor}:${scolor} $auser\n");
 						}
                         unset($auser);
                         break;
@@ -746,7 +751,7 @@ while (1) {
 							fclose($fp);  
 						}
 					else {
-						fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}$auser is not on the list.\n");
+						fputs($socket,"PRIVMSG $nick : ${scolor}$auser is not on the list.\n");
 					}
 					} else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
 					unset($auser);
@@ -760,8 +765,8 @@ while (1) {
 						unset($pugmax);
 						$pugmax = $setmax;
 						$vs = checkvs($pugmax);
-						fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Max players to start PUG set to${afcolor}${bcolor}:${scolor}${bcolor} $setmax - $vs\n");
-						fputs($socket,"PRIVMSG $jchan : ${scolor}${bcolor}Max players to start PUG set to${afcolor}${bcolor}:${scolor}${bcolor} $setmax - $vs\n");
+						fputs($socket,"PRIVMSG $nick : ${scolor}Max players to start PUG set to${afcolor}:${scolor} $setmax - $vs\n");
+						fputs($socket,"PRIVMSG $jchan : ${scolor}Max players to start PUG set to${afcolor}:${scolor} $setmax - $vs\n");
 							$chan2 = $jchan;
 							$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 									   // choose random captians
@@ -773,8 +778,8 @@ while (1) {
 									file_put_contents("captains.txt", $captains);
 									file_put_contents("militia.txt", $militia_capt . "\n");
 									file_put_contents("imc.txt", $imc_capt . "\n");
-									fputs($socket,"PRIVMSG $chan2 : ${team2}${bcolor}IMC Captain:${scolor}${bcolor} $imc_capt\n");
-									fputs($socket,"PRIVMSG $chan2 : ${team1}${bcolor}Militia Captain${team1}${bcolor}:${scolor}${bcolor} $militia_capt\n");
+									fputs($socket,"PRIVMSG $chan2 : ${team2}IMC Captain:${scolor} $imc_capt\n");
+									fputs($socket,"PRIVMSG $chan2 : ${team1}Militia Captain${team1}:${scolor} $militia_capt\n");
 											//remove Captains from pug list and Create Pug List
 												$DELETE1 = $militia_capt;
 												$DELETE2 = $imc_capt;
@@ -812,7 +817,7 @@ while (1) {
 												} 
 												flock($fp, LOCK_UN); 
 												fclose($fp);
-										fputs($socket,"PRIVMSG $chan2 : ${scolor}${bcolor}Captains removed from Pug choices${afcolor}${bcolor}, ${scolor}${bcolor}Captains coin toss now${afcolor}${bcolor}......\n");	
+										fputs($socket,"PRIVMSG $chan2 : ${scolor}Captains removed from Pug choices${afcolor}, ${scolor}Captains coin toss now${afcolor}......\n");	
 											sleep(1);
 											unset($line);
 											$line = file("captains.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -822,37 +827,37 @@ while (1) {
 												$militia_team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											file_put_contents("pick.txt", $winner);
 										if (array_search($winner, $militia_team) !== FALSE) {
-											$team = "${team1}${bcolor}Militia";
+											$team = "${team1}Militia";
 											} else { 
-											$team = "${team2}${bcolor}IMC";
+											$team = "${team2}IMC";
 									}
 									sleep(5);
-									fputs($socket,"PRIVMSG $chan2 : ${scolor}${bcolor}First to choose${afcolor}${bcolor}: ${scolor}${bcolor}$winner - $team\n");
+									fputs($socket,"PRIVMSG $chan2 : ${scolor}First to choose${afcolor}: ${scolor}$winner - $team\n");
 									$listlft = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											foreach($listlft as $index => $entry)
 												{
 													$index = $index+1;
-													$listnlft .= "${afcolor}${bcolor}[${scolor}" . $index . "${afcolor}${bcolor}]${scolor} " . $entry . "${afcolor}${bcolor},${scolor} ";
+													$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . "${afcolor},${scolor} ";
 												}
 											$listnlft = substr($listnlft, 0 , -11);
-											fputs($socket,"PRIVMSG $chan2 : ${scolor}${bcolor}Currently on the PUG List${afcolor}${bcolor}:${scolor}${bcolor} $listnlft\n");
+											fputs($socket,"PRIVMSG $chan2 : ${scolor}Currently on the PUG List${afcolor}:${scolor} $listnlft\n");
 								 
 									}
 								elseif (checkplayercnt($setmax) == "MORE") {
 									$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 									   $currentcnt = count($line);
 									   $vs = checkvs($pugmax);
-									fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Cannot set max players to ${afcolor}${bcolor}$setmax${scolor}${bcolor} because there are currently${afcolor}${bcolor} $currentcnt ${scolor}${bcolor}waiting on the list ${afcolor}${bcolor}!${scolor}${bcolor}setmax stays at${afcolor}${bcolor}:${scolor}${bcolor} $pugmax - $vs\n");
+									fputs($socket,"PRIVMSG $nick : ${scolor}Cannot set max players to ${afcolor}$setmax${scolor} because there are currently${afcolor} $currentcnt ${scolor}waiting on the list ${afcolor}!${scolor}setmax stays at${afcolor}:${scolor} $pugmax - $vs\n");
 									}
 								else {
 									unset($pugmax);
 									$pugmax = $setmax;
 									$vs = checkvs($pugmax);
-									fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Max players to start PUG set to${afcolor}${bcolor}:${scolor}${bcolor} $setmax - $vs\n");
-									fputs($socket,"PRIVMSG $jchan : ${scolor}${bcolor}Max players to start PUG set to${afcolor}${bcolor}:${scolor}${bcolor} $setmax - $vs\n");
+									fputs($socket,"PRIVMSG $nick : ${scolor}Max players to start PUG set to${afcolor}:${scolor} $setmax - $vs\n");
+									fputs($socket,"PRIVMSG $jchan : ${scolor}Max players to start PUG set to${afcolor}:${scolor} $setmax - $vs\n");
 								}
 									
-					} else { fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Incorect syntac${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}setmax ${afcolor}${bcolor}<${scolor}${bcolor}EVEN-NUMBER${afcolor}${bcolor}> (${scolor}${bcolor}number cannot be blank${afcolor}${bcolor})${scolor}${bcolor} Current setting${afcolor}${bcolor}:${scolor}${bcolor} $pugmax \n"); 
+					} else { fputs($socket,"PRIVMSG $nick : ${scolor}Incorect syntac${afcolor}: $cmdsym${scolor}setmax ${afcolor}<${scolor}EVEN-NUMBER${afcolor}> (${scolor}number cannot be blank${afcolor})${scolor} Current setting${afcolor}:${scolor} $pugmax \n"); 
 						}
 					}
 					else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
@@ -866,7 +871,7 @@ while (1) {
 							file_put_contents("imc.txt", "");
 							file_put_contents("captains.txt", "");
 							file_put_contents("pick.txt", "");
-							fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}All PUG FILES CLEARED!${afcolor}${bcolor}!\n");
+							fputs($socket,"PRIVMSG $nick : ${scolor}All PUG FILES CLEARED!${afcolor}!\n");
 					} 
 					else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
 					break;
@@ -885,23 +890,23 @@ while (1) {
 					if (!empty($aduser)) {
 							$admin = file("admins.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 							if (array_search($aduser, $admin) !== FALSE) {
-							fputs($socket,"CNOTICE $nick $jchan : ${scolor}${bcolor} $aduser is already on the admin list${afcolor}${bcolor}!\n");
+							fputs($socket,"CNOTICE $nick $jchan : ${scolor} $aduser is already on the admin list${afcolor}!\n");
 							}
 							else {
 							$aduser = $aduser . "\n";
 							file_put_contents("admins.txt", $aduser, FILE_APPEND);
-							fputs($socket,"CNOTICE $nick $jchan : ${scolor}${bcolor}Added new admin${afcolor}${bcolor}:${scolor}${bcolor} $aduser\n");
+							fputs($socket,"CNOTICE $nick $jchan : ${scolor}Added new admin${afcolor}:${scolor} $aduser\n");
 							} 
 						} else 
-						{ fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Incorect syntac${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}addadmin ${afcolor}${bcolor}<${scolor}${bcolor}HOSTNAME${afcolor}${bcolor}> (${scolor}${bcolor}ex${afcolor}${bcolor}: $cmdsym${scolor}${bcolor}addadmin $nhost${afcolor}${bcolor})\n"); 
+						{ fputs($socket,"PRIVMSG $nick : ${scolor}Incorect syntac${afcolor}: $cmdsym${scolor}addadmin ${afcolor}<${scolor}HOSTNAME${afcolor}> (${scolor}ex${afcolor}: $cmdsym${scolor}addadmin $nhost${afcolor})\n"); 
 						}
 						} else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
                       unset($aduser);
                       break;
 			case "${cmdsym}commands":
 				if (admincheck($nhost)) {
-						$acmdlist = implode("${afcolor}${bcolor},${scolor}${bcolor} ", $acommands);
-						fputs($socket,"PRIVMSG $nick : ${scolor}${bcolor}Private Commands: $acmdlist\n");
+						$acmdlist = implode("${afcolor},${scolor} ", $acommands);
+						fputs($socket,"PRIVMSG $nick : ${scolor}Private Commands: $acmdlist\n");
 						} else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
                         unset($aduser);
                       break;
@@ -1081,7 +1086,7 @@ function isEven($number) {
 function startpugck() {
 $line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 								if (count($line) == "$pugmax") { 
-									fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}PUG LIST FULL${afcolor}${bcolor}:${scolor}${bcolor} Choosing Random Captains!\n");
+									fputs($socket,"PRIVMSG $chan : ${scolor}PUG LIST FULL${afcolor}:${scolor} Choosing Random Captains!\n");
 									   // choose random captians
 									   $players = $line;
 									   $random_capt = array_rand($players,2);
@@ -1091,8 +1096,8 @@ $line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 									file_put_contents("captains.txt", $captains);
 									file_put_contents("militia.txt", $militia_capt . "\n");
 									file_put_contents("imc.txt", $imc_capt . "\n");
-									fputs($socket,"PRIVMSG $chan : ${team2}${bcolor}IMC Captain:${scolor}${bcolor} $imc_capt\n");
-									fputs($socket,"PRIVMSG $chan : ${team1}${bcolor}Militia Captain${team1}${bcolor}:${scolor}${bcolor} $militia_capt\n");
+									fputs($socket,"PRIVMSG $chan : ${team2}IMC Captain:${scolor} $imc_capt\n");
+									fputs($socket,"PRIVMSG $chan : ${team1}Militia Captain${team1}:${scolor} $militia_capt\n");
 											//remove Captains from pug list and Create Pug List
 												$DELETE1 = $militia_capt;
 												$DELETE2 = $imc_capt;
@@ -1130,7 +1135,7 @@ $line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 												} 
 												flock($fp, LOCK_UN); 
 												fclose($fp);
-								fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}Captains removed from Pug choices${afcolor}${bcolor}, ${scolor}${bcolor}Captains coin toss now${afcolor}${bcolor}......\n");	
+								fputs($socket,"PRIVMSG $chan : ${scolor}Captains removed from Pug choices${afcolor}, ${scolor}Captains coin toss now${afcolor}......\n");	
 									sleep(1);
 									unset($line);
 									$line = file("captains.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -1140,20 +1145,20 @@ $line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 										$militia_team = file("militia.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 									file_put_contents("pick.txt", $winner);
 								if (array_search($winner, $militia_team) !== FALSE) {
-									$team = "${team1}${bcolor}Militia";
+									$team = "${team1}Militia";
 									} else { 
-									$team = "${team2}${bcolor}IMC";
+									$team = "${team2}IMC";
 									}
 									sleep(5);
-									fputs($socket,"PRIVMSG $chan : ${scolor}${bcolor}First to choose${afcolor}${bcolor}: ${scolor}${bcolor}$winner - $team\n");
+									fputs($socket,"PRIVMSG $chan : ${scolor}First to choose${afcolor}: ${scolor}$winner - $team\n");
 									$listlft = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											foreach($listlft as $index => $entry)
 												{
 													$index = $index+1;
-													$listnlft .= "${afcolor}${bcolor}[${scolor}" . $index . "${afcolor}${bcolor}]${scolor} " . $entry . "${afcolor}${bcolor},${scolor} ";
+													$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . "${afcolor},${scolor} ";
 												}
 											$listnlft = substr($listnlft, 0 , -11);
-											fputs($socket,"CNOTICE $winner $jchan : ${scolor}${bcolor}Picks${afcolor}${bcolor}:${scolor}${bcolor} $listnlft\n");
+											fputs($socket,"CNOTICE $winner $jchan : ${scolor}Picks${afcolor}:${scolor} $listnlft\n");
 								}
 	}
 
