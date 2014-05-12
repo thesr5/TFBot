@@ -32,15 +32,15 @@ $pugmax = 12; //default player count needed to start pug can be changed as a adm
 */
 
 $afcolor = "04";	// Main accent color default: 04
-$bcolor = "99";		// Background color default: 01
+$bcolor = "";		// Background color default: 01
 $scolor = "";		// Standard text color default: 00
 $team1 = "04";		// Team 1 accent color default: 04
 $team2 = "12";		// Team 2 accent color default: 12
 
 $scolor = "$scolor";
-$afcolor = "$afcolor,$bcolor";
-$team1 = "$team1,$bcolor";
-$team2 = "$team2,$bcolor";
+$afcolor = "$afcolor";
+$team1 = "$team1";
+$team2 = "$team2";
 
 //End Bot color scheme
 
@@ -288,7 +288,7 @@ while (1) {
 												} 
 												flock($fp, LOCK_UN); 
 												fclose($fp);
-								fputs($socket,"PRIVMSG $chan : ${scolor}Captains removed from Pug choices${afcolor}, ${scolor}Captains coin toss now${afcolor}......\n");	
+								fputs($socket,"PRIVMSG $chan : ${scolor}Captains removed from Pug choices${afcolor}. ${scolor}Captains coin toss now${afcolor}......\n");	
 									sleep(1);
 									unset($line);
 									$line = file("captains.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -308,7 +308,7 @@ while (1) {
 											foreach($listlft as $index => $entry)
 												{
 													$index = $index+1;
-													$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . "${afcolor},${scolor} ";
+													$listnlft .= "${afcolor}[${scolor}" . $index . "${afcolor}]${scolor} " . $entry . " ";
 												}
 											$listnlft = substr($listnlft, 0 , -1);
 											fputs($socket,"CNOTICE $winner $jchan : ${scolor}Picks${afcolor}:${scolor} $listnlft\n");
@@ -360,9 +360,9 @@ while (1) {
 						break;
 					case "${cmdsym}last":
 						$militia_last = file("militia-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$militia_last = implode("${scolor},${team1} ", $militia_last); 
+						$militia_last = implode("${scolor} | ${team1}", $militia_last); 
 						$imc_last = file("imc-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$imc_last = implode("${scolor}, ${team2}", $imc_last); 
+						$imc_last = implode("${scolor} | ${team2}", $imc_last); 
 						fputs($socket,"PRIVMSG $chan : ${team1}Militia Team -- ${scolor}[${team1}C${scolor}]${team1} $militia_last\n");
 						fputs($socket,"PRIVMSG $chan : ${team2}IMC Team -- ${scolor}[${team2}C${scolor}]${team2} $imc_last\n");
 						unset($militia_last, $imc_last);
@@ -371,7 +371,7 @@ while (1) {
 					$pinp = puglock($pugmax);
 					if ($pinp !== TRUE) {
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$listn = implode("${afcolor}, ${scolor}", $list); 
+						$listn = implode("${afcolor} | ${scolor}", $list); 
 						if (empty($list)) { 
 						fputs($socket,"PRIVMSG $chan : ${scolor}Currently no players are waiting${afcolor}! -- ${scolor}To add yourself to the list use the following commands${afcolor}: $cmdsym${scolor}add \n");
 						}
@@ -397,7 +397,7 @@ while (1) {
 						fputs($socket,"CNOTICE $nick $chan : ${scolor}PUG - picks left${afcolor}:${scolor} $listn\n"); 
 						} else {
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$listn = implode("${afcolor},${scolor} ", $list); 
+						$listn = implode("${afcolor} |${scolor} ", $list); 
 						fputs($socket,"PRIVMSG $chan : ${scolor}Players in current PUG${afcolor}:${scolor} $listn\n");
 							}
 						}
@@ -424,14 +424,14 @@ while (1) {
 							if (array_search($picker, $team) !== FALSE) {
 								$team = "${afcolor}Militia";
 								$teamfile = "militia.txt"; 
-								$ttheme = "${team1},${scolor} ";
+								$ttheme = "${team1} |${scolor} ";
 								$tcolor = "${team1}";
 								}
 								else
 								{
 								$team = "${team2}IMC";
 								$teamfile = "imc.txt";
-								$ttheme = "${team2},${scolor} ";
+								$ttheme = "${team2} |${scolor} ";
 								$tcolor = "${team2}";
 								}
 							if (!empty($puser) && is_numeric($pusergt)) {
@@ -515,13 +515,13 @@ while (1) {
 											if (array_search($npicker, $team) !== FALSE) {
 												$team = "${team1}Militia";
 												$teamfile = "militia.txt"; 
-												$ttheme = "${team1},${scolor} ";
+												$ttheme = "${team1} |${scolor} ";
 												}
 												else
 												{
 												$team = "${team2}IMC";
 												$teamfile = "imc.txt";
-												$ttheme = "${team2},${scolor} ";
+												$ttheme = "${team2} |${scolor} ";
 												}
 										//put last pick on right team
 										$altbp = $ltbp . "\n";
@@ -536,9 +536,9 @@ while (1) {
 										copy("imc.txt", "imc-last.txt");
 										
 										$militia_last = file("militia-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-										$militia_last = implode("${scolor},${team1} ", $militia_last); 
+										$militia_last = implode("${scolor} |${team1} ", $militia_last); 
 										$imc_last = file("imc-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-										$imc_last = implode("${scolor},${team2} ", $imc_last); 
+										$imc_last = implode("${scolor} |${team2} ", $imc_last); 
 										fputs($socket,"PRIVMSG $chan : ${team1}Militia Team -- ${scolor}[${team1}C${scolor}]${team1} $militia_last\n");
 										fputs($socket,"PRIVMSG $chan : ${team2}IMC Team -- ${scolor}[${team2}C${scolor}]${team2} $imc_last\n");
 										sleep(5);
