@@ -413,6 +413,12 @@ while (1) {
 							$puser = rtrim($getname[$puser]);
 							$apuser = $puser . "\n";
 					$pline = file("pready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+					
+					foreach($getname as $username) {
+						fputs($socket,"CPRIVMSG $username $chan : Teams have been chosen please join on the IMC captain. \n"); 
+						fputs($socket,"CNOTICE $username $chan : Teams have been chosen please join on the IMC captain. \n");
+					}											
+					
 					if ($pinp) {
 						//Check picker for right picker
 						$picker = $nick;
@@ -528,12 +534,7 @@ while (1) {
 										file_put_contents($teamfile, $altbp, FILE_APPEND);
 										
 											fputs($socket,"CNOTICE $npicker $chan : ${scolor}$ltbp has been AUTO added to $team${scolor} as last pick.\n");
-											
-											foreach($getname as $username) {
-												fputs($socket,"CPRIVMSG $username $chan : Teams have been chosen please join on the IMC captain. \n"); 
-												fputs($socket,"CNOTICE $username $chan : Teams have been chosen please join on the IMC captain. \n");
-											}											
-											
+																						
 										//POST TEAMS
 										sleep(1);
 										//Finish up and clean files
