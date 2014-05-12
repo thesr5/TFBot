@@ -529,6 +529,11 @@ while (1) {
 										
 											fputs($socket,"CNOTICE $npicker $chan : ${scolor}$ltbp has been AUTO added to $team${scolor} as last pick.\n");
 											
+											foreach($getname as $username) {
+												fputs($socket,"CPRIVMSG $username $chan : Teams have been chosen please join on the IMC captain. \n"); 
+												fputs($socket,"CNOTICE $username $chan : Teams have been chosen please join on the IMC captain. \n");
+											}											
+											
 										//POST TEAMS
 										sleep(1);
 										//Finish up and clean files
@@ -576,7 +581,11 @@ while (1) {
 																file_put_contents("militia.txt", $militia_capt . "\n");
 																file_put_contents("imc.txt", $imc_capt . "\n");
 																fputs($socket,"PRIVMSG $chan : ${team2}IMC Captain:${scolor} $imc_capt\n");
+																fputs($socket,"CPRIVMSG $imc_capt $chan : You have been chosen as the IMC captain. Start picking teams.\n");
+																fputs($socket,"CNOTICE $imc_capt $chan : You have been chosen as the IMC captain.  Start picking teams.\n");
 																fputs($socket,"PRIVMSG $chan : ${team1}Militia Captain${team1}:${scolor} $militia_capt\n");
+																fputs($socket,"CPRIVMSG $militia_capt $chan : You have been chosen as the Militia captain. Start picking teams.\n");
+																fputs($socket,"CNOTICE $militia_capt $chan : You have been chosen as the Militia captain.  Start picking teams.\n");
 																		//remove Captains from pug list and Create Pug List
 																			$DELETE1 = $militia_capt;
 																			$DELETE2 = $imc_capt;
