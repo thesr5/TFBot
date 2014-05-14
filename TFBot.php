@@ -92,6 +92,7 @@ while (1) {
 					fputs($socket,"NOTICE $tnuser : Your name was updated from: $nuser to: $tnuser on the PUG List. - $chan.\n");
 				nickchange("tready.txt",$nuser,$tnuser);	
 				nickchange("pready.txt",$nuser,$tnuser);
+				nickchange("sready.txt",$nuser,$tnuser);
 				nickchange("militia.txt",$nuser,$tnuser);
 				nickchange("imc.txt",$nuser,$tnuser);
 				nickchange("captains.txt",$nuser,$tnuser);
@@ -122,7 +123,30 @@ while (1) {
 									fwrite($fp, $line); 
 								} 
 								flock($fp, LOCK_UN); 
-								fclose($fp);  
+								fclose($fp);
+
+								$datap = file("sready.txt"); 
+								$out = array(); 
+
+								foreach($datap as $line) { 
+									if(trim($line) != $DELETE) { 
+										$out[] = $line; 
+									} 
+								} 
+
+								$fp = fopen("sready.txt", "w+"); 
+								flock($fp, LOCK_EX); 
+								foreach($out as $line) { 
+									fwrite($fp, $line); 
+								} 
+								flock($fp, LOCK_UN); 
+								fclose($fp); 
+						sleep(1);
+						$listnp = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+						$nplayers = $pugmax - count($listnp);								
+						if ($nplayers !== 0) {
+							fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");
+						}								
 				}
 			}
 		
@@ -192,6 +216,30 @@ while (1) {
 								} 
 								flock($fp, LOCK_UN); 
 								fclose($fp);
+								
+								$datap = file("sready.txt"); 
+								$out = array(); 
+
+								foreach($datap as $line) { 
+									if(trim($line) != $DELETE) { 
+										$out[] = $line; 
+									} 
+								} 
+
+								$fp = fopen("sready.txt", "w+"); 
+								flock($fp, LOCK_EX); 
+								foreach($out as $line) { 
+									fwrite($fp, $line); 
+								} 
+								flock($fp, LOCK_UN); 
+								fclose($fp);  
+								
+						sleep(1);
+						$listnp = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+						$nplayers = $pugmax - count($listnp);								
+						if ($nplayers !== 0) {
+							fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");
+						}
 				}
 			}
 			if (stripos( $get[1], 'JOIN' ) !== false) {
@@ -240,6 +288,26 @@ while (1) {
 						if ($nplayers !== 0) {
 							fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");
 						}
+						$line = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+						if (array_search($partuser, $line) !== FALSE) {
+								$DELETE = $tuser; 
+								$datap = file("sready.txt"); 
+								$out = array(); 
+
+								foreach($datap as $line) { 
+									if(trim($line) != $DELETE) { 
+										$out[] = $line; 
+									} 
+								} 
+
+								$fp = fopen("sready.txt", "w+"); 
+								flock($fp, LOCK_EX); 
+								foreach($out as $line) { 
+									fwrite($fp, $line); 
+								} 
+								flock($fp, LOCK_UN); 
+								fclose($fp);  
+				}
 						unset($line);
 						sleep(1);
 						//START PUG SCRIPT
