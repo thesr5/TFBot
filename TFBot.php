@@ -61,6 +61,7 @@ $commands = array (
 $acommands = array (
 "${cmdsym}commands",
 "${cmdsym}cmd",
+"${cmdsym}clearbackedout",
 "${cmdsym}clearlist",
 "${cmdsym}clearpugfiles",
 "${cmdsym}addadmin",
@@ -80,6 +81,11 @@ while (1) {
         //this helps us to identify commands and parameters
         $get = explode(' ', $data);
 		
+		if (stripos( $get[1], ':Closing' ) !== false) {
+		echo "Reconnecting in 10 seconds\n";
+		sleep(10);
+		passthru("Startbot.bat");
+		}
 		if (stripos( $get[1], 'NICK' ) !== false) {
 			$nick = explode(':',$get[0]);
 			$nick = explode('!',$nick[1]);
@@ -89,7 +95,7 @@ while (1) {
 			$tnuser = rtrim($wnuser);
 
 				if (chnickchange("tready.txt",$nuser)) {
-					fputs($socket,"NOTICE $tnuser : Your name was updated from: $nuser to: $tnuser on the PUG List. - $chan.\n");
+					fputs($socket,"CNOTICE $tnuser $jchan : Your name was updated from: $nuser to: $tnuser on the PUG List. - $chan.\n");
 				nickchange("tready.txt",$nuser,$tnuser);	
 				nickchange("pready.txt",$nuser,$tnuser);
 				nickchange("sready.txt",$nuser,$tnuser);
@@ -158,7 +164,7 @@ while (1) {
 		$bnick = $bnick . "|2";
 		fputs($socket,"NICK $bnick\n");
 		}
-		if (stripos( $data, 'Welcome' ) !== false) {
+		if (stripos( $data, 'End of /MOTD command.' ) !== false) {
 		
 		fputs($socket,"PRIVMSG Q@CServe.quakenet.org : AUTH $authname $authpass\n");
 		sleep(1);
@@ -257,6 +263,7 @@ while (1) {
 
 				//PUG BOT CODE---------------------------------------------------------
 					case "${cmdsym}commands":
+					usleep($delay_send);
 						fputs($socket,"CNOTICE $nick $chan : ${afcolor}#${scolor}Titanfall.Pug Commands${afcolor}:${scolor} $cmdlist \n");
 						break;
 					case "${cmdsym}promote":
@@ -272,11 +279,16 @@ while (1) {
 						break;
 					case "${cmdsym}join":
 					case "${cmdsym}add":
+					usleep($delay_send);
 						$tuser = $nick;
 						$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+						$backedout = file("backedout.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						if (array_search($tuser, $line) !== FALSE) {
 						fputs($socket,"CNOTICE $nick $chan : ${scolor}Your already on the list${afcolor}!\n");
 						}
+						//elseif (array_search($tuser, $backedout) !== FALSE) {
+						//fputs($socket,"CNOTICE $nick $chan : ${scolor}You have to wait until next pug because you backed out during a picking process!${afcolor}!\n");
+						//}
 						else {
 						$tuser = $nick . "\n";
 						$pinp = puglock($pugmax);
@@ -286,6 +298,7 @@ while (1) {
 						$nplayers = $pugmax - count($listnp);								
 						fputs($socket,"CNOTICE $nick $chan : ${scolor}You've been added to the list${afcolor}:${scolor} $tuser\n");
 						if ($nplayers !== 0) {
+							usleep($delay_send);
 							fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");
 						}
 						$line = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -428,9 +441,11 @@ while (1) {
                         unset($tuser, $slist, $listnlft, $listlft, $slist);
                         break;
 					case "${cmdsym}coms":
-					case "${cmdsym}voip":
+					case "${cmdsym}voip";
+					usleep($delay_send);
 						$list = file("coms.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$list = implode("${afcolor}||${scolor} ", $list); 
+						$list = implode("${afcolor}||${scolor} ", $list);
+						usleep($delay_send);						
 						fputs($socket,"PRIVMSG $chan : ${scolor}VOIP${afcolor}:${scolor} $list\n"); 
 						unset($list);
 						break;
@@ -438,12 +453,13 @@ while (1) {
 						$militia_last = file("militia-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						$militia_last = implode("${scolor} | ${team1}", $militia_last); 
 						$imc_last = file("imc-last.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
-						$imc_last = implode("${scolor} | ${team2}", $imc_last); 
+						$imc_last = implode("${scolor} | ${team2}", $imc_last);
 						fputs($socket,"PRIVMSG $chan : ${team1}Militia Team -- ${scolor}[${team1}C${scolor}]${team1} $militia_last\n");
 						fputs($socket,"PRIVMSG $chan : ${team2}IMC Team -- ${scolor}[${team2}C${scolor}]${team2} $imc_last\n");
 						unset($militia_last, $imc_last);
 						break;
 					case "${cmdsym}list":
+					usleep($delay_send);
 					$pinp = puglock($pugmax);
 					if ($pinp !== TRUE) {
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
@@ -633,6 +649,7 @@ while (1) {
 											file_put_contents("imc.txt", "");
 											file_put_contents("captains.txt", "");
 											file_put_contents("pick.txt", "");
+											file_put_contents("backedout.txt", "");
 											
 										sleep(2);
 										$pinp = puglock($pugmax,"tready.txt");
@@ -751,7 +768,13 @@ while (1) {
 					case "${cmdsym}remove":
 						$auser = $nick;    
 						$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+						$slist = file("sready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						if (array_search($auser, $line) !== FALSE) {
+						$pinp = puglock($pugmax,"tready.txt");
+								if ($pinp == TRUE) { 
+								fputs($socket,"CNOTICE $auser $chan : !remove is disabled - PUG has already started!\n");
+								} 
+								else {
 							fputs($socket,"CNOTICE $auser $chan : You have been removed from the list!\n");
 								$DELETE = $auser; 
 								$datap = file("tready.txt"); 
@@ -773,6 +796,26 @@ while (1) {
 						$list = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 						$nplayers = $pugmax - count($list);								
 						fputs($socket,"PRIVMSG $chan : ${afcolor}(${scolor}$nplayers needed to begin${afcolor})\n");								
+							}
+						} elseif (array_search($auser, $slist) !== FALSE) {
+							fputs($socket,"CNOTICE $auser $chan : You have been removed from the side list!\n");
+								$DELETE = $auser; 
+								$datap = file("sready.txt"); 
+								$out = array(); 
+
+								foreach($datap as $line) { 
+									if(trim($line) != $DELETE) { 
+										$out[] = $line; 
+									} 
+								} 
+
+								$fp = fopen("sready.txt", "w+"); 
+								flock($fp, LOCK_EX); 
+								foreach($out as $line) { 
+									fwrite($fp, $line); 
+								} 
+								flock($fp, LOCK_UN); 
+								fclose($fp);						
 							}
 						else {
 							fputs($socket,"CNOTICE $nick $chan : ${scolor}Your not on the list${afcolor}:${scolor} $auser\n");
@@ -942,14 +985,23 @@ while (1) {
 					else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
 					unset($pugmaxo,$setmax);
 					break;
+				case "${cmdsym}clearbackedout":
+				if (admincheck($nhost)) {
+							file_put_contents("backedout.txt", "");
+							fputs($socket,"PRIVMSG $nick : ${scolor}BACKEDOUT LIST CLEARED!${afcolor}!\n");
+					} 
+					else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
+					break;
 				case "${cmdsym}clearpugfiles":
 				if (admincheck($nhost)) {
 							file_put_contents("tready.txt", "");
 							file_put_contents("pready.txt", "");
+							file_put_contents("sready.txt", "");
 							file_put_contents("militia.txt", "");
 							file_put_contents("imc.txt", "");
 							file_put_contents("captains.txt", "");
 							file_put_contents("pick.txt", "");
+							file_put_contents("backedout.txt", "");
 							fputs($socket,"PRIVMSG $nick : ${scolor}All PUG FILES CLEARED!${afcolor}!\n");
 					} 
 					else { fputs($socket,"PRIVMSG $nick : You do not have sufficient access!\n"); }
