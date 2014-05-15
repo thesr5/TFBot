@@ -268,11 +268,7 @@ while (1) {
 						fputs($socket,"CNOTICE $nick $chan : ${afcolor}#${scolor}Titanfall.Pug Commands${afcolor}:${scolor} $cmdlist \n");
 						break;
 					case "${cmdsym}promote":
-<<<<<<< HEAD
 					case "${cmdsym}need":
-=======
-          case "${cmdsym}need":
->>>>>>> 8f4bd652879a86967a5411026a1a0620026f807f
 					$pinp = puglock($pugmax);
 						if ($pinp !== TRUE) {
 					$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
