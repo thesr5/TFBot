@@ -54,6 +54,7 @@ $commands = array (
 "${cmdsym}coms",
 "${cmdsym}voip",
 "${cmdsym}promote",
+"${cmdsym}need",
 "${cmdsym}list",
 "${cmdsym}pick",
 "${cmdsym}remove",
@@ -267,6 +268,7 @@ while (1) {
 						fputs($socket,"CNOTICE $nick $chan : ${afcolor}#${scolor}Titanfall.Pug Commands${afcolor}:${scolor} $cmdlist \n");
 						break;
 					case "${cmdsym}promote":
+          case "${cmdsym}need":
 					$pinp = puglock($pugmax);
 						if ($pinp !== TRUE) {
 					$line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
