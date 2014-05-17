@@ -1294,5 +1294,133 @@ $line = file("tready.txt", FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
 											fputs($socket,"CNOTICE $winner $jchan : ${scolor}Picks${afcolor}:${scolor} $listnlft\n");
 								}
 	}
-
+	
+	
+class vote 
+{
+// Three properties make up a vote.  The IP address, the name of the voter, and an integer that is 2-6 representing each number corresponding to the max team size
+	public string $IP = null;
+	public string $name = null;
+	public int $vote = null;
+	public function setVote($newIP, $newName, $newVote)
+	{
+		$this->$IP = $newIP;
+		$this->$name = $newName;
+		$this->$vote = $newVote;
+	}
+	public function getVote()
+	{
+		$arr_props ['IP']=$IP;
+		$arr_props ['name']=$name;
+		$arr_props ['vote']=$vote;
+		return $arr_props;
+	}
+}
+// Create an array that holds the vote objects for reference
+$maxTeamSizeVotes = array();
+// Pass a vote object to this function
+function castVotemax($theVote) 
+{
+	// Get a list of all the players that are ready
+	$treadyFile = file("tready.txt");
+	$treadyArray = explode("/n", $treadyFile);
+	foreach ($vote in $maxTeamSizeVotes)
+	{
+		// Check to see if the player is ready
+		foreach ($readyPlayer in $treadyArray)
+		{
+			if ($readyPlayer == $vote['name'])
+			{
+				// If the voter's IP is the same then overwrite that vote from the maxTeamSizeVotes array
+				if ($theVote['IP'] == $vote['IP'])
+				{
+					$vote = $theVote;
+				}
+				// If the voter's IP is not the same then this is considered a new vote and the vote will be appended to the end of maxTeamSizeVotes
+				else 
+				{
+					$maxTeamSizeVotes[] = $theVote;
+				}
+			}
+			else
+			{
+				fputs($socket, "CPRIVMSG $theVoter $chan You must be on the pug list before you can vote.  Type \"!add\" to get added to the list.");
+			}
+		}
+	}
+}
+// Function to see if any votes have passed
+function checkVotemax() 
+{
+	$totalVotes = count($maxTeamSizeVotes);
+	int $twoVtwo;
+	int $threeVthree;
+	int $fourVfour;
+	int $fiveVfive;
+	int $sixVsix;
+	int $votePassed;
+	
+	
+	// Add up all the votes
+	foreach ($vote in $maxTeamSizeVotes)
+	{
+		switch($vote['vote']) 
+		{
+			case 2:
+				$twoVtwo++;
+				break;
+			case 3:
+				$threeVthree++;
+				break;
+			case 4:
+				$fourVfour++;
+				break;
+			case 5:
+				$fiveVfive++;
+				break;
+			case 6:
+				$sixVsix++;
+				break;
+			default:
+				break;
+		}
+	}
+	// See if any votes are the majority if a vote is majority clear maxTeamSizeVotes
+	if ($twoVtwo > $totalVotes/2)
+	{
+		$votePassed = 2;
+		unset($maxTeamSizeVotes);
+		$maxTeamSizeVotes = array();
+	}
+	else if ($threeVthree > $totalVotes/2)
+	{
+		$votePassed = 3;
+		unset($maxTeamSizeVotes);
+		$maxTeamSizeVotes = array();
+	}
+	else if ($fourVfour > $totalVotes/2)
+	{
+		$votePassed = 4;
+		unset($maxTeamSizeVotes);
+		$maxTeamSizeVotes = array();
+	}
+	else if ($fiveVfive > $totalVotes/2)
+	{
+		$votePassed = 5;
+		unset($maxTeamSizeVotes);
+		$maxTeamSizeVotes = array();
+	}
+	else if ($sixVsix > $totalVotes/2)
+	{
+		$votePassed = 6;
+		unset($maxTeamSizeVotes);
+		$maxTeamSizeVotes = array();
+	}
+	else 
+	{
+		$votePassed = 0;
+	}
+	// Return an integer representing the following -  0: No votes passed  2: 2v2 Passed  3: 3v3 Passed etc...
+	return $votePassed;
+}
 ?>
